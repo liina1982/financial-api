@@ -8,7 +8,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 /*
-   Error interceptors is used to log errors that occur during the execution of HTTP requests
+   Error interceptor is used to log errors that occur during the execution of HTTP requests
 */
 @Injectable()
 export class ErrorInterceptor implements NestInterceptor {
