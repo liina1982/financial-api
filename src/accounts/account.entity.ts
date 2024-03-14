@@ -29,13 +29,16 @@ export class Account {
   @CreateDateColumn()
   createdAt: Date;
 
+  @Column({ type: 'integer', default: () => "(strftime('%s', 'now'))" })
+  lastUpdated: number;
+
   constructor(partial: Partial<CreateAccountDto>) {
     Object.assign(this, partial);
     this.balance = this.balance || 0;
   }
 
   @AfterInsert()
-  async logUpdate() {
+  async logCreate() {
     const data = {
       userId: this.userId,
       iban: this.iban,
