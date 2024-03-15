@@ -8,7 +8,7 @@ This is test assignment and it's requirements are:
 ## Installation
 
 ```bash
-$ npm install
+npm install
 ```
 
 ## Running the app
@@ -37,16 +37,14 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Support
+## Using application
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+The service can be used through a Swagger URL. Prior to initiating any transactions, it is necessary to set up an account. You will be able to interact with endpoints for depositing, transferring and withdrawing funds.
 
-## Stay in touch
+swagger - <http://localhost:3000/api>
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+! There are validations added for iban. You have to enter a correct iban when creating an account.
 
-## License
+## Tests
 
-Nest is [MIT licensed](LICENSE).
+Currently there are no tests present.
