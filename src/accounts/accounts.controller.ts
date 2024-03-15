@@ -17,7 +17,7 @@ export class AccountsController {
 
   @Post()
   @ApiOperation({ summary: 'Create account' })
-  async createAccount(@Body() body: CreateAccountDto) {
+  createAccount(@Body() body: CreateAccountDto): Promise<Account> {
     return this.accountsService.create(body.userId, body.iban);
   }
 
@@ -34,7 +34,7 @@ export class AccountsController {
 
   @Get()
   @ApiOperation({ summary: 'Get list of accounts' })
-  async getAccounts(): Promise<Account[]> {
+  getAccounts(): Promise<Account[]> {
     return this.accountsService.findAll();
   }
 }

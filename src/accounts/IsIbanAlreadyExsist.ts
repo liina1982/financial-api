@@ -10,7 +10,7 @@ import { Injectable } from '@nestjs/common';
 export class IsIbanAlreadyExist implements ValidatorConstraintInterface {
   constructor(protected readonly accountsService: AccountsService) {}
 
-  async validate(iban: string) {
+  async validate(iban: string): Promise<boolean> {
     const user = await this.accountsService.findIban(iban);
     return !user;
   }

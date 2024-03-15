@@ -11,7 +11,7 @@ export class TransactionsController {
 
   @Post('/top-up')
   @ApiOperation({ summary: 'Add money to the account' })
-  topUpTransaction(@Body() body: TransactionDto) {
+  topUpTransaction(@Body() body: TransactionDto): Promise<boolean> {
     return this.transactionsService.processTopUp(
       TransactionType.TOP_UP,
       body.accountId,
@@ -21,7 +21,7 @@ export class TransactionsController {
 
   @Post('/withdraw')
   @ApiOperation({ summary: 'Withdraw money from the account' })
-  withdrawTransaction(@Body() body: TransactionDto) {
+  withdrawTransaction(@Body() body: TransactionDto): Promise<boolean> {
     return this.transactionsService.processWithdraw(
       TransactionType.WITHDRAWAL,
       body.accountId,
@@ -31,8 +31,10 @@ export class TransactionsController {
 
   @Post('/transfer')
   @ApiOperation({ summary: 'Transfer money from one account to another' })
-  transferTransaction(@Body() body: TransferDto) {
-    console.log('body', body);
+  transferTransaction(@Body() body: TransferDto): Promise<{
+    senderBalance: number;
+    receiverBalance: number;
+  }> {
     return this.transactionsService.processTransfer(body);
   }
 }

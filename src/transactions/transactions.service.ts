@@ -30,7 +30,10 @@ export class TransactionsService {
     return await this.updateAccountBalance(accountId, withdrawAmount, type);
   }
 
-  async processTransfer(transferDto: TransferDto) {
+  async processTransfer(transferDto: TransferDto): Promise<{
+    senderBalance: number;
+    receiverBalance: number;
+  }> {
     const transferAmount = new Decimal(transferDto.amount)
       .toDecimalPlaces(2)
       .toNumber();
@@ -89,7 +92,6 @@ export class TransactionsService {
     balance: number,
     type: TransactionType,
   ): Promise<boolean> {
-    //const connection = this.accountRepository.manager.connection;
     return await this.entityManager.transaction(
       async (transactionalEntityManager) => {
         const connection = transactionalEntityManager.connection;
