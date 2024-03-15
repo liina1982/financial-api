@@ -55,7 +55,7 @@ export class TransactionsService {
           );
 
           if (senderAccount.balance < amountInCents) {
-            throw new Error('Insufficient funds');
+            throw new InsufficientFundsException();
           }
 
           senderAccount.balance -= amountInCents;
