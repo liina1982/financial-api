@@ -13,15 +13,21 @@ export class AccountsService {
     return this.entityManager.save(account);
   }
 
-  findAll(): Promise<Account[]> {
-    return this.entityManager.find(Account);
+  async findAll(): Promise<Account[]> {
+    const accounts = await this.entityManager.find(Account);
+    return accounts.map((account) => {
+      account.balance = account.balance / 100;
+      return account
+    })
   }
 
-  findOne(id: number): Promise<Account> {
-    return this.entityManager.getRepository(Account).findOneBy({ id });
+  async findOne(id: number): Promise<Account> {
+    const account =  await this.entityManager.getRepository(Account).findOneBy({ id });
+    account.balance = account.balance / 100;
+    return account;
   }
 
-  existsByIban(iban: string): Promise<boolean> {
+  findIban(iban: string): Promise<boolean> {
     return this.entityManager.getRepository(Account).existsBy({ iban });
   }
 }

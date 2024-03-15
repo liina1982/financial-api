@@ -43,7 +43,12 @@ The service can be used through a Swagger URL. Prior to initiating any transacti
 
 swagger - <http://localhost:3000/api>
 
-! There are validations added for iban. You have to enter a correct iban when creating an account.
+
+*  There are validations added for iban. You have to enter a correct iban when creating an account.
+* Account balance is saved in in cents
+
+
+
 
 ## Tests
 

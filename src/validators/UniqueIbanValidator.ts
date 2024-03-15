@@ -11,6 +11,7 @@ export class UniqueIbanValidator implements ValidatorConstraintInterface {
   constructor(protected readonly accountsService: AccountsService) {}
 
   async validate(iban: string): Promise<boolean> {
-    return await this.accountsService.existsByIban(iban);
+    const user = await this.accountsService.findIban(iban);
+    return !user;
   }
 }
