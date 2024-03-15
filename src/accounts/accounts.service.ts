@@ -21,7 +21,7 @@ export class AccountsService {
     return this.entityManager.getRepository(Account).findOneBy({ id });
   }
 
-  findIban(iban: string): Promise<Account> {
-    return this.entityManager.getRepository(Account).findOneBy({ iban });
+  existsByIban(iban: string): Promise<boolean> {
+    return this.entityManager.getRepository(Account).existsBy({ iban });
   }
 }

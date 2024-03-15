@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, Validate } from 'class-validator';
-import { IsIbanAlreadyExist } from '../IsIbanAlreadyExsist';
-import { IbanFormatValidator } from 'src/validators/IbanFormatValidator';
+import { UniqueIbanValidator } from '../../validators/UniqueIbanValidator';
+import { IbanFormatValidator } from '../../validators/IbanFormatValidator';
 
 export class CreateAccountDto {
   @ApiProperty()
@@ -10,7 +10,7 @@ export class CreateAccountDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @Validate(IsIbanAlreadyExist, ['iban'], {
+  @Validate(UniqueIbanValidator, ['iban'], {
     message: 'Iban already exsists',
   })
   @Validate(IbanFormatValidator, ['iban'], {

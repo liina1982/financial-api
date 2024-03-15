@@ -1,9 +1,10 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Post } from '@nestjs/common';
 import { TransactionsService } from '../transactions/transactions.service';
 import { TransactionDto } from './dtos/TransactionDto';
 import { ApiOperation } from '@nestjs/swagger';
 import { TransactionType } from './transactions.entity';
 import { TransferDto } from './dtos/TransferDto';
+import { Observable } from 'rxjs';
 
 @Controller('transactions')
 export class TransactionsController {
@@ -31,10 +32,17 @@ export class TransactionsController {
 
   @Post('/transfer')
   @ApiOperation({ summary: 'Transfer money from one account to another' })
-  transferTransaction(@Body() body: TransferDto): Promise<{
-    senderBalance: number;
-    receiverBalance: number;
-  }> {
+  transferTransaction(@Body() body: TransferDto): Promise<
+    | {
+        senderBalance: number;
+        receiverBalance: number;
+      }
+    | boolean
+    | Observable<never>
+  > {
+    if (body.receiverAccountId === body.senderAccountId) {
+      throw new ForbiddenException();
+    }
     return this.transactionsService.processTransfer(body);
   }
 }
