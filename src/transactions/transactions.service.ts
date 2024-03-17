@@ -16,7 +16,7 @@ export class TransactionsService {
     type: TransactionType,
     id: number,
     amount: number,
-  ): Promise<boolean> {
+  ): Promise<Account | Observable<never>> {
     return await this.updateAccountBalance(id, amount, type);
   }
 
@@ -24,8 +24,9 @@ export class TransactionsService {
     type: TransactionType,
     accountId: number,
     amount: number,
-  ): Promise<boolean> {
+  ): Promise<Account | Observable<never>> {
     return await this.updateAccountBalance(accountId, amount, type);
+
   }
 
   async processTransfer(transferDto: TransferDto): Promise<
@@ -36,7 +37,6 @@ export class TransactionsService {
     | boolean
     | Observable<never>
   > {
-    const amountInCents = transferDto.amount * 100;
     return await this.entityManager.transaction(
       async (transactionalEntityManager) => {
         const connection = transactionalEntityManager.connection;
@@ -48,36 +48,29 @@ export class TransactionsService {
             queryRunner,
             transferDto.receiverAccountId,
           );
-
+          
           const senderAccount = await this.getAccountFromDB(
             queryRunner,
             transferDto.senderAccountId,
           );
 
-          if (senderAccount.balance < amountInCents) {
-            throw new InsufficientFundsException();
-          }
-
-          senderAccount.balance -= amountInCents;
-          receiverAccount.balance += amountInCents;
-
           await this.updateAccountBalanceWithExistingConnection(
             queryRunner,
-            senderAccount.userId,
-            senderAccount.balance,
+            senderAccount.id,
+            transferDto.amount,
             TransactionType.TRANSFER,
           );
 
           await this.updateAccountBalanceWithExistingConnection(
             queryRunner,
-            receiverAccount.userId,
-            receiverAccount.balance,
+            receiverAccount.id,
+            transferDto.amount,
             TransactionType.RECEIVE,
           );
 
           const senderTransaction = this.createTransaction(
             senderAccount.iban,
-            amountInCents,
+            transferDto.amount * 100,
             TransactionType.TRANSFER,
           );
           await transactionalEntityManager
@@ -86,45 +79,29 @@ export class TransactionsService {
 
           const receiverTransaction = this.createTransaction(
             receiverAccount.iban,
-            amountInCents,
+            transferDto.amount * 100,
             TransactionType.RECEIVE,
           );
           await transactionalEntityManager
             .getRepository(Transaction)
             .save(receiverTransaction);
+            
+            const updatedReceiverAccount = await this.getAccountFromDB(
+              queryRunner,
+              transferDto.receiverAccountId,
+            );
+            
+            const updatedSenderAccount = await this.getAccountFromDB(
+              queryRunner,
+              transferDto.senderAccountId,
+            );
+
           await queryRunner.commitTransaction();
 
           return {
-            senderBalance: senderAccount.balance,
-            receiverBalance: receiverAccount.balance,
+            senderBalance: updatedSenderAccount.balance / 100,
+            receiverBalance: updatedReceiverAccount.balance / 100,
           };
-        } catch (error) {
-          await queryRunner.rollbackTransaction();
-          console.error(error);
-          return throwError(() => error);
-        } finally {
-          await queryRunner.release();
-        }
-      },
-    );
-  }
-
-  async updateAccountBalances(
-    accountId: number,
-    balance: number,
-    type: TransactionType,
-  ): Promise<Account | boolean | Observable<never>> {
-    return await this.entityManager.transaction(
-      async (transactionalEntityManager) => {
-        const connection = transactionalEntityManager.connection;
-        const queryRunner = connection.createQueryRunner();
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
-
-        try {
-          const account = await this.saveAccountToDB(queryRunner, accountId, balance, type);
-          queryRunner.commitTransaction();
-          return account;
         } catch (error) {
           await queryRunner.rollbackTransaction();
           console.error(error);
@@ -140,7 +117,7 @@ export class TransactionsService {
     accountId: number,
     amount: number,
     type: TransactionType,
-  ): Promise<boolean> {
+  ): Promise<Account | Observable<never>> {
     return await this.entityManager.transaction(
       async (transactionalEntityManager) => {
         const connection = transactionalEntityManager.connection;
@@ -155,11 +132,14 @@ export class TransactionsService {
             amount,
             type,
           );
+          const account = await this.getAccountFromDB(queryRunner, accountId)
           await queryRunner.commitTransaction();
-        } catch (err) {
+          account.balance = account.balance / 100;
+          return account;
+        } catch (error) {
           await queryRunner.rollbackTransaction();
-          console.error(err);
-          return false;
+          console.error(error);
+          return throwError(() => error);
         } finally {
           await queryRunner.release();
         }
@@ -173,23 +153,12 @@ export class TransactionsService {
     amount: number,
     type: TransactionType,
   ): Promise<boolean> {
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
       return await this.saveAccountToDB(
         queryRunner,
         accountId,
         amount,
         type,
       );
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      console.error(error);
-      throwError(() => error);
-    } finally {
-      await queryRunner.release();
-    }
   }
 
   async getAccountFromDB(

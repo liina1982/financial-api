@@ -5,6 +5,7 @@ import { ApiOperation } from '@nestjs/swagger';
 import { TransactionType } from './transactions.entity';
 import { TransferDto } from './dtos/TransferDto';
 import { Observable } from 'rxjs';
+import { Account } from 'src/accounts/account.entity';
 
 @Controller('transactions')
 export class TransactionsController {
@@ -12,7 +13,7 @@ export class TransactionsController {
 
   @Post('/top-up')
   @ApiOperation({ summary: 'Add money to the account' })
-  topUpTransaction(@Body() body: TransactionDto): Promise<boolean> {
+  topUpTransaction(@Body() body: TransactionDto): Promise<Account | Observable<never>> {
     return this.transactionsService.processTopUp(
       TransactionType.TOP_UP,
       body.accountId,
@@ -22,7 +23,7 @@ export class TransactionsController {
 
   @Post('/withdraw')
   @ApiOperation({ summary: 'Withdraw money from the account' })
-  withdrawTransaction(@Body() body: TransactionDto): Promise<boolean> {
+  withdrawTransaction(@Body() body: TransactionDto): Promise<Account | Observable<never>> {
     return this.transactionsService.processWithdraw(
       TransactionType.WITHDRAWAL,
       body.accountId,
